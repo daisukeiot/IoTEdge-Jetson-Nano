@@ -52,7 +52,7 @@ git clone https://github.com/daisukeiot/IoTEdge-Jetson-Nano.git
 
 or download this and save to a local folder.
 
-DeploymentManifest/deployment.arm64v8.json
+[DeploymentManifest/deployment.arm64v8.json](https://github.com/daisukeiot/IoTEdge-Jetson-Nano/blob/master/DeploymentManifest/deployment.arm64v8.json)
 
 ## Hololens Setup
 
