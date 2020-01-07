@@ -1,0 +1,15 @@
+{
+    "azure-iot-edge.defaultPlatform": {
+        "platform": "arm64v8",
+        "alias": null
+    },
+    "cSpell.words": [
+        "hololens",
+        "iotedge",
+        "iotedged",
+        "journalctl",
+        "mgmt",
+        "nvpm",
+        "nvpmodel"
+    ]
+}

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Live Camera View</title>
+    <meta http-equiv="content-type" charset="utf-8">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <script src="http://code.jquery.com/jquery-2.0.0.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+        font-size: 2em;
+        font-weight: bold;
+        margin: 0;
+      }
+
+      .videoView, .liveVideo {
+        vertical-align: top;
+      }
+      
+      .videoView {
+        height: 75vh;
+        width :100vw;
+        max-width: 100vw;
+        position: relative;
+        vertical-align: middle;
+      }
+
+      .liveVideo {
+        height: 100%;
+        display: block;
+        /* object-fit: scale-down; */
+        border:gray;
+        border-style: outset;
+        border-width: 2px;
+      }
+
+      .footer {
+        text-align: left;
+        display: inline-block;
+        font-size: 0.7em;
+        margin-top: 1em; 
+        margin-left:2px;
+      }
+
+      .main-content, .main-label {
+        color : #0078d4;
+        background-color: white;
+        display: block;
+      }
+
+      .main-button {
+        color : white;
+        background-color: #0078d4;
+        width : 13em;
+        max-width: 13em;
+      }
+
+      .modal-setting {
+        display: none;
+        position: absolute;
+        float: left;
+        overflow: auto;
+        z-index: 1;
+        left:0;
+        top:0;
+        width: 100%;
+        height: 100%;
+        -webkit-animation-name: zoom;
+        -webkit-animation-duration: 1s;
+        animation-name: zoom;
+        animation-duration: 0.8s;
+        background-color: white;
+      }
+
+      @-webkit-keyframes zoom {
+        from {-webkit-transform:scale(0)} 
+        to {-webkit-transform:scale(1)}
+      }
+
+      @keyframes zoom {
+        from {transform:scale(0)} 
+        to {transform:scale(1)}
+      }
+      
+      .modal-content, .modal-label, .modal-button {
+        color : white;
+        font-weight: normal;
+      }
+
+      .modal-content {
+        overflow: auto;
+        position: absolute;
+        float: left;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%); 
+        max-height: 90vh;
+        max-width : 90vw;
+        height : 90%;
+        width : 90%;
+        background-color:#0078d4 ;
+        padding: 2rem;
+      }
+
+      .modal-label {
+        display:block;
+        width:100%;
+      }
+
+      .modal-desc-group {
+        display:block;
+        width:100%;
+        border-width: 1px;
+        border-style: solid;
+        padding: 0.3em;
+      }
+
+      .modal-label-Desc {
+        display:block;
+        width:100%;
+        font-size: 1.1rem;
+        font-weight: normal;
+      }
+
+      .modalSetting-input {
+        display:block;
+        width:100%;
+        margin-bottom: 0.3em;
+      }
+
+      .modal-button-group {
+        display: flex;
+        vertical-align: bottom;
+        flex-grow: 1;
+      }
+
+      .modal-button {
+        font-size : 1em;
+        overflow: hidden;
+        text-decoration: none;
+        object-fit: scale-down;
+        padding:0.3em;
+        width: 30vw;
+        vertical-align: bottom;
+        height:auto;
+        outline: 0px solid transparent;
+        background-color:gray;
+        color:white;
+      }
+  </style>
+  </head>
+  
+  <body class="main-content">
+    <div class="videoView">
+      <img class="liveVideo" id="liveVideo" src="./WP-InitializingSystem.png">
+    </div>
+    <div style="padding-top: 1rem;">
+      <!-- <input class="main-button" type="button" value="Re-Connect" id="btnConnect" style="margin-left: 0;"/> -->
+      <input class="main-button" type="button" value="Camera Setting" id="btnShowSetting" style="margin-left: 0;">
+    </div>
+    <div class="footer" style="display: block;">
+      <label class="main-label" style="float: left;color:black;"><pre style="margin:0;">Status : </pre></Camera></label>
+      <label class="main-label" id="textStatus"><pre style="color:gray;font-weight: normal;margin:0">Current Setting</pre></label>
+    </div>
+
+    <div id="modal-setting" class="modal-setting" >
+      <div class="modal-content">
+        <label class="modal-label" style="font-size: 6vh;">Setting</label>
+        <div class="modal-desc-group">
+          <label class="modal-label-Desc">Set path to the camera device</label>
+          <label class="modal-label-Desc">Examples  : </label>
+          <label class="modal-label-Desc"><pre style="margin:0;">Webcam    : /dev/video0</pre></label>
+          <label class="modal-label-Desc"><pre style="margin:0;">IP Camera : rtsp://[IP Address]</pre></label>
+          <label class="modal-label-Desc">* Please check camera's manual</label>
+        </div>
+        <br>
+        <label class="modal-label">Device Path</label>
+        <input class="modalSetting-input" id="textCameraPath" type="text" placeholder="Enter Path to your camera" />
+        <label class="modal-label">User Name</label>
+        <input class="modalSetting-input" id="textCameraUser" type="text" placeholder="User Name" style="width: 50%;" />
+        <label class="modal-label">Password</label>
+        <input class="modalSetting-input" id="textCameraPass" type="password" placeholder="Password" style="width: 50%;"/>
+        <div class="modal-button-group">
+          <input type="button" value="Apply"  class="modal-button" id="btnSettingApply" >
+          <input type="button" value="Cancel" class="modal-button" id="btnSettingCancel" >
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var liveViewVideo    = document.getElementById("liveVideo");
+      var btnConnect       = document.getElementById("btnConnect");
+      var btnShowSetup     = document.getElementById("btnShowSetting");
+      var StatusLine       = document.getElementById("textStatus");
+      var currentPath      = document.getElementById("textCameraPath")
+      var modalSetting     = document.getElementById("modal-setting");
+      var txtSettingPath   = document.getElementById("textCameraPath");
+      var txtSettingUser   = document.getElementById("textCameraUser");
+      var txtSettingPass   = document.getElementById("textCameraPass");
+      var btnSettingApply  = document.getElementById("btnSettingApply");
+      var btnSettingCancel = document.getElementById("btnSettingCancel");
+
+      var url = document.URL.replace('http','ws');
+      // var url = "ws://10.123.96.68:82/"
+      var ws = new WebSocket(url + "stream");
+
+      ws.onopen = function() {
+          console.log("connection was established");
+          txtSettingPass.value = "";
+          txtSettingUser.value = "";
+          txtSettingPath.value = "";
+          StatusLine.innerHTML = "";
+          ws.send("nextFrame");
+      };
+
+      ws.onclose = function() {
+        console.log("ws.onclose");
+        txtSettingPass.value = "";
+        txtSettingUser.value = "";
+        txtSettingPath.value = "";
+        StatusLine.innerHTML = "Disconnected";
+      };
+
+      ws.onmessage = function(msg) {
+
+        if (typeof(msg.data) === 'string')
+        {
+          var json = JSON.parse(msg.data);
+
+          // Received Image to Display (Live View)
+          if (json.Image)
+          {
+            //console.log("Live View Image Received")
+            liveViewVideo.src = 'data:image/png;base64, ' + json.Image;
+          }
+          else if (json.DevicePath)
+          {
+            console.log("Device Path %s", json.DevicePath);
+            currentPath.innerHTML = json.DevicePath;
+
+            if (json.isSuccess)
+            {
+              StatusLine.innerHTML = "Successfully connected to " + json.DevicePath;
+              txtSettingUser.value = json.UserName;
+              txtSettingPass.value = json.Password;
+              txtSettingPath.value = json.DevicePath;
+              StatusLine.style.color = 'gray'
+            }
+            else{
+              StatusLine.innerHTML = "Error : " + json.DevicePath;
+              StatusLine.style.color = 'red'
+            }
+          }
+          else if (json.DeviceType)
+          {
+            // from VideoCapture.py, CaptureDevice Class
+            if (json.deviceType == 3)
+            {
+              isHololens = True
+            }
+            else{
+              isHololens = False
+            }
+          }
+          else if (json.DeviceStatus)
+          {
+
+            StatusLine.innerHTML = json.DeviceStatus;
+            if (json.isSuccess)
+            {
+              StatusLine.style.color = 'gray'
+            }
+            else{
+              StatusLine.style.color = 'red'
+            }
+          }
+          else
+          {
+            console.log("Msg Received %s", msg);
+          }
+        }
+      };
+
+      liveViewVideo.onload = function() {
+        console.log("liveViewVideo.onload");
+        if (ws.readyState == 1)
+        {
+          ws.send("nextFrame");
+        }
+      }
+
+      btnShowSetup.onclick = function(evt) {
+        console.log("btnShowSetup");
+        modalSetting.style.display = 'block';
+      }
+
+      btnSettingApply.onclick = function(evt) {
+        console.log("btnSettingApply");
+        ws.send("{\"VideoPath\":\"" + txtSettingPath.value.trim() + "\",\"UserName\":\"" + txtSettingUser.value.trim() + "\",\"Password\":\"" + txtSettingPass.value.trim() + "\"}");
+        modalSetting.style.display = 'none';
+      }
+
+      btnSettingCancel.onclick = function(evt) {
+        console.log("btnSettingCancel");
+        // txtSettingPass.value = ""
+        // txtSettingUser.value = ""
+        // txtSettingPath.value = ""
+        modalSetting.style.display = 'none';
+      }
+
+    </script>
+  </body>
+</html>
